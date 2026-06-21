@@ -1,0 +1,18 @@
+{
+  "name": "Pro Kariyer Soccer Simulator",
+  "short_name": "ProKariyer",
+  "description": "Futbol kariyerini zirveye taşı!",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#00ff88",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/club_shield.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}

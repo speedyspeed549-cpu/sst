@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pro Kariyer Soccer Simulator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://esm.sh/three@0.184.0",
+          "three/": "https://esm.sh/three@0.184.0/"
+        }
+      }
+    </script>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="notch"></div>
+        <div class="screen-content">
+            
+            <!-- AŞAMA 0: OYUNCU YARATMA EKRANI -->
+            <div id="screen-creation" class="game-screen active">
+                <div class="creation-container">
+                    <div class="text-center" style="margin-bottom: 20px;">
+                        <h1 style="margin:0; color: var(--primary); font-size: 2.2rem; font-weight: 800; letter-spacing: -1px;">PRO KARIYER</h1>
+                        <span class="badge-gold">ELITE SOCCER SIM</span>
+                    </div>
+                    
+                    <div class="modern-card">
+                        <div class="creation-input-group">
+                            <label style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; display: block;">Kariyer Adı</label>
+                            <input type="text" id="input-player-name" placeholder="Efsane ismini yaz..." value="Yeni Yıldız">
+                        </div>
+                        
+                        <div class="creation-input-group" style="margin-top: 15px;">
+                            <label style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; display: block;">Başlangıç Kulübü</label>
+                            <select id="select-team">
+                                <option value="Anadolu Kartalları">Anadolu Kartalları</option>
+                                <option value="Karaköprü SK">Karaköprü SK</option>
+                                <option value="Şehir Spor">Şehir Spor</option>
+                            </select>
+                        </div>
+
+                        <button id="btn-start-career" class="btn btn-primary" style="margin-top: 25px; width: 100%;">KARİYERİNE BAŞLA</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AŞAMA 1: ANA DASHBOARD EKRANI -->
+            <div id="screen-dashboard" class="game-screen">
+                <div class="header-bar">
+                    <div class="player-status-card">
+                        <div class="player-main-info">
+                            <div class="flex-column">
+                                <span id="txt-team-name" style="font-weight: 800; font-size: 1.1rem; color: var(--primary);">Takım İsmi</span>
+                                <span id="txt-weather" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">☀️ Güneşli</span>
+                            </div>
+                            <div id="status-badge-container" style="display:flex; gap:5px;">
+                                <span id="txt-media-persona" class="title-badge" style="background: rgba(52, 152, 219, 0.1); border-color: var(--accent-blue); color: var(--accent-blue);">Profesyonel</span>
+                                <span id="txt-status-title" class="title-badge">Amatör</span>
+                            </div>
+                        </div>
+                        
+                        <div class="status-progress-container">
+                            <div class="status-label-row">
+                                <span id="txt-current-rank">Amatör</span>
+                                <span id="txt-next-rank">Sonraki: Yerel Marka</span>
+                            </div>
+                            <div class="progress-track">
+                                <div id="bar-status-progress" class="progress-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="resources-grid">
+                        <div class="resource-pill">
+                            <span>⚡</span>
+                            <span class="label">Enerji</span>
+                            <span id="txt-energy-val" class="val">100</span>
+                        </div>
+                        <div class="resource-pill">
+                            <span>🔥</span>
+                            <span class="label">Popülerlik</span>
+                            <span id="txt-pop-val" class="val">20</span>
+                        </div>
+                        <div class="resource-pill">
+                            <span>👥</span>
+                            <span class="label">Takipçi</span>
+                            <span id="txt-followers-val" class="val">150</span>
+                        </div>
+                    </div>
+                    <div class="modern-card" style="margin-bottom: 0; padding: 12px 18px;">
+                        <div class="flex-column">
+                             <span class="label" style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Toplam Bakiye</span>
+                             <span id="txt-money-val" style="font-size: 1.4rem; font-weight: 900; color: var(--primary);">$500</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-scroll-area">
+                    <div id="tab-content-profile" class="tab-panel active">
+                        <div class="modern-card" style="display: flex; justify-content: space-around; text-align: center;">
+                            <div>
+                                <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Piyasa Değeri</div>
+                                <div id="txt-market-value" style="font-size: 1.1rem; font-weight: 800; color: var(--primary);">$5,000</div>
+                            </div>
+                            <div style="width: 1px; background: var(--glass-border);"></div>
+                            <div>
+                                <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Forma Geliri</div>
+                                <div id="txt-jersey-income" style="font-size: 1.1rem; font-weight: 800; color: var(--gold);">$0</div>
+                            </div>
+                        </div>
+
+                        <div class="modern-card">
+                            <h3>Performans Yetenekleri</h3>
+                            <div style="display: flex; flex-direction: column; gap: 12px;" id="skills-list"></div>
+                        </div>
+
+                        <div class="modern-card">
+                            <h3>Sosyal İlişkiler</h3>
+                            <div style="display: flex; flex-direction: column; gap: 15px;">
+                                <div class="rel-item">
+                                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:6px; color: var(--text-muted);"><span>Teknik Direktör</span> <span id="val-rel-coach">50%</span></div>
+                                    <div class="progress-track"><div id="rel-fill-coach" class="progress-fill" style="width: 50%;"></div></div>
+                                </div>
+                                <div class="rel-item">
+                                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:6px; color: var(--text-muted);"><span>Takım Arkadaşları</span> <span id="val-rel-team">50%</span></div>
+                                    <div class="progress-track"><div id="rel-fill-team" class="progress-fill" style="width: 50%;"></div></div>
+                                </div>
+                                <div class="rel-item">
+                                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:6px; color: var(--text-muted);"><span>Taraftarlar</span> <span id="val-rel-fans">30%</span></div>
+                                    <div class="progress-track"><div id="rel-fill-fans" class="progress-fill" style="width: 30%;"></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modern-card">
+                            <h3>Lüks Koleksiyonu</h3>
+                            <div id="lifestyle-gallery" class="lifestyle-grid"></div>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-career" class="tab-panel">
+                        <div class="modern-card">
+                            <h3>Sıradaki Fikstür</h3>
+                            <div style="text-align: center; padding: 10px 0;">
+                                <div style="font-size: 1.5rem; font-family: var(--font-display); font-weight: 800; margin-bottom: 20px;">
+                                    <span id="txt-fixture-home" style="color: var(--primary);">KARTALLAR</span> 
+                                    <span style="font-size: 0.8rem; color: var(--text-muted); margin: 0 10px;">VS</span> 
+                                    <span id="txt-fixture-away">RAKİP SK</span>
+                                </div>
+                                <div class="flex-column gap-10">
+                                    <div id="contract-info-box" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 10px; border-radius: 12px; margin-bottom: 5px;">
+                                        <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Sözleşme Süresi</div>
+                                        <div id="txt-contract-status" style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">10 MAÇ KALDI</div>
+                                    </div>
+                                    <button id="btn-pre-match" class="btn btn-primary" style="width: 100%;">⚽ MAÇ HAZIRLIĞI</button>
+                                    <button id="btn-renew-contract" class="btn btn-secondary" style="width: 100%; display: none; background: var(--accent-blue); border-color: var(--accent-blue); color: #000;">🤝 SÖZLEŞME YENİLE</button>
+                                    <button id="btn-rest" class="btn btn-secondary" style="width: 100%;">💤 DİNLEN (+25 Enerji)</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-league" class="tab-panel">
+                        <div class="modern-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                                <h3 style="margin:0;">Puan Tablosu</h3>
+                                <select id="select-league-view" style="width: auto; padding: 4px 8px; font-size: 0.7rem;">
+                                    <option value="tur">Türkiye</option>
+                                    <option value="esp">İspanya</option>
+                                    <option value="eng">İngiltere</option>
+                                    <option value="ger">Almanya</option>
+                                    <option value="ita">İtalya</option>
+                                </select>
+                            </div>
+                            <div id="league-table-container" class="league-table-wrapper">
+                                <table class="league-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Takım</th>
+                                            <th>O</th>
+                                            <th>G</th>
+                                            <th>B</th>
+                                            <th>M</th>
+                                            <th>P</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="league-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-training" class="tab-panel">
+                        <div class="modern-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <h3 style="margin:0;">Antrenman Tesisi</h3>
+                                <span class="badge-gold">PRO LEVEL</span>
+                            </div>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;">
+                                Yeteneklerini geliştirmek için antrenman yap. Her seans <strong>20 Enerji</strong> tüketir.
+                            </p>
+                            <div id="training-list" class="flex-column gap-10">
+                                <!-- Training items will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-sponsors" class="tab-panel">
+                        <div class="modern-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <h3 style="margin:0;">Sponsorluk Anlaşmaları</h3>
+                                <span id="txt-active-sponsors-count" class="badge-gold">0/2 AKTİF</span>
+                            </div>
+                            <div id="sponsorships-list" class="flex-column gap-10"></div>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-collection" class="tab-panel">
+                        <div class="modern-card">
+                            <h3>Kupa Dolabı</h3>
+                            <div id="trophy-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
+                                <!-- Trophies here -->
+                            </div>
+                        </div>
+                        <div class="modern-card">
+                            <h3>Kişisel Rekorlar</h3>
+                            <div id="records-list" class="flex-column gap-10" style="margin-top: 10px;">
+                                <!-- Records here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-social" class="tab-panel">
+                        <div class="modern-card" style="background: linear-gradient(135deg, #1d9bf01a, #00000000);">
+                            <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
+                                <div style="width:50px; height:50px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">⚽</div>
+                                <div>
+                                    <div id="social-profile-name" style="font-weight:800; font-size:1rem;">@YildizOyuncu</div>
+                                    <div style="font-size:0.7rem; color:var(--text-muted);"><span id="social-follower-count" style="color:var(--primary); font-weight:700;">150</span> Takipçi</div>
+                                </div>
+                            </div>
+                            <div style="font-size:0.75rem; color:var(--text-main); line-height:1.4; margin-bottom:10px;">
+                                Profesyonel Futbolcu | <span id="social-persona-bio">Gelişmekte Olan</span>
+                            </div>
+                        </div>
+                        <div class="modern-card">
+                            <h3>Taraftar Akışı</h3>
+                            <div id="social-feed-list" class="flex-column gap-10" style="margin-top:10px; max-height:300px; overflow-y:auto; padding-right:5px;">
+                                <!-- Feed entries will go here -->
+                                <p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Henüz bir paylaşım yok...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-lifestyle" class="tab-panel">
+                        <div class="modern-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                                <h3 style="margin:0;">Lüks Yaşam Menüsü</h3>
+                                <span class="badge-gold">LUXURY</span>
+                            </div>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:20px;">Prestijini artıracak mülkler ve aksesuarlar satın al.</p>
+                            
+                            <div class="lifestyle-category-section">
+                                <h4 class="lifestyle-cat-title">🏠 Gayrimenkul</h4>
+                                <div id="lifestyle-list-home" class="flex-column gap-10"></div>
+                            </div>
+
+                            <div class="lifestyle-category-section" style="margin-top:25px;">
+                                <h4 class="lifestyle-cat-title">🏎️ Araçlar</h4>
+                                <div id="lifestyle-list-vehicle" class="flex-column gap-10"></div>
+                            </div>
+
+                            <div class="lifestyle-category-section" style="margin-top:25px;">
+                                <h4 class="lifestyle-cat-title">💎 Aksesuarlar</h4>
+                                <div id="lifestyle-list-accessory" class="flex-column gap-10"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-shop" class="tab-panel">
+                        <div class="modern-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <h3 style="margin:0;">Enerji Marketi</h3>
+                                <span class="badge-gold">MARKET</span>
+                            </div>
+                            <div id="energy-shop-list" class="flex-column gap-10">
+                                <div class="luxury-item">
+                                    <div class="luxury-info">
+                                        <div class="luxury-icon-box">🥤</div>
+                                        <div>
+                                            <div class="luxury-name">Küçük Enerji İçeceği</div>
+                                            <div class="luxury-perk">+20 Enerji</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-action-sm btn-buy-energy" data-type="small">$50</button>
+                                </div>
+                                <div class="luxury-item">
+                                    <div class="luxury-info">
+                                        <div class="luxury-icon-box">🥤</div>
+                                        <div>
+                                            <div class="luxury-name">Orta Enerji İçeceği</div>
+                                            <div class="luxury-perk">+50 Enerji</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-action-sm btn-buy-energy" data-type="medium">$120</button>
+                                </div>
+                                <div class="luxury-item">
+                                    <div class="luxury-info">
+                                        <div class="luxury-icon-box">🥤</div>
+                                        <div>
+                                            <div class="luxury-name">Büyük Enerji İçeceği</div>
+                                            <div class="luxury-perk">+100 Enerji</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary btn-action-sm btn-buy-energy" data-type="large">$250</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modern-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <h3 style="margin:0;">Transfer Pazarı</h3>
+                                <span class="badge-gold">OFFERS</span>
+                            </div>
+                            <div id="transfer-list" class="flex-column gap-10"></div>
+                        </div>
+
+                        <div class="modern-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <h3 style="margin:0;">Pro Ekipmanlar</h3>
+                                <span class="badge-gold">SKILL BOOST</span>
+                            </div>
+                            <div id="gear-list" class="flex-column gap-10"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bottom-nav-bar">
+                    <button class="nav-item active" data-tab="profile">
+                        <div class="icon-circle">👤</div>
+                        <span>Profil</span>
+                    </button>
+                    <button class="nav-item" data-tab="training">
+                        <div class="icon-circle">🏋️</div>
+                        <span>Antrenman</span>
+                    </button>
+                    <button class="nav-item" data-tab="career">
+                        <div class="icon-circle">⚽</div>
+                        <span>Kariyer</span>
+                    </button>
+                    <button class="nav-item" data-tab="league">
+                        <div class="icon-circle">📊</div>
+                        <span>Lig</span>
+                    </button>
+                    <button class="nav-item" data-tab="sponsors">
+                        <div class="icon-circle">🤝</div>
+                        <span>Sponsor</span>
+                    </button>
+                    <button class="nav-item" data-tab="collection">
+                        <div class="icon-circle">🏆</div>
+                        <span>Kupa</span>
+                    </button>
+                    <button class="nav-item" data-tab="social">
+                        <div class="icon-circle">📱</div>
+                        <span>Sosyal</span>
+                    </button>
+                    <button class="nav-item" data-tab="lifestyle">
+                        <div class="icon-circle">💎</div>
+                        <span>Yaşam</span>
+                    </button>
+                    <button class="nav-item" data-tab="shop">
+                        <div class="icon-circle">🛒</div>
+                        <span>Pazar</span>
+                    </button>
+                    <button class="nav-item" data-tab="store">
+                        <div class="icon-circle">💎</div>
+                        <span>Mağaza</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MAĞAZA EKRANI (IAP) -->
+            <div id="tab-content-store" class="tab-panel game-screen">
+                <div class="store-header">
+                    <div class="stadium-bg-blur"></div>
+                    <div class="store-header-content">
+                        <h2>⚡ Kariyerine Hız Kat!</h2>
+                        <p>Özel paketlerle efsaneye dönüş.</p>
+                    </div>
+                </div>
+                
+                <div class="store-grid">
+                    <!-- Paketler main.js tarafından inject edilecek -->
+                </div>
+
+                <div class="store-footer">
+                    <button id="btn-restore-purchases" class="btn btn-secondary" style="width:100%; font-size: 0.7rem;">Satın Alımları Geri Yükle</button>
+                </div>
+            </div>
+
+            <!-- ANTRENMAN OYUNU EKRANI -->
+            <div id="screen-training-game" class="game-screen" style="background: #000; padding:0; justify-content: center; align-items: center;">
+                <div id="training-countdown" class="countdown-overlay">3</div>
+                <div class="training-hud">
+                    <div class="hud-item">
+                        <span id="training-skill-title">ANTRENMAN</span>
+                    </div>
+                    <div class="hud-item">
+                        <span id="training-timer">5.0</span>
+                    </div>
+                    <div class="hud-item">
+                        <span id="training-progress-text">0/5</span>
+                    </div>
+                </div>
+                <div id="training-rhythm-ui" class="rhythm-ui" style="display:none;">
+                    <div id="rhythm-target" class="rhythm-target"></div>
+                </div>
+                <canvas id="training-canvas-3d" width="400" height="480" style="background: #1a4a1a;"></canvas>
+                <canvas id="training-canvas-2d" width="400" height="480" style="background: #1a4a1a; display: none;"></canvas>
+            </div>
+
+            <!-- MAÇ HAZIRLIĞI EKRANI -->
+            <div id="screen-pre-match" class="game-screen">
+                <div class="modern-card">
+                    <h3>MAÇ HAZIRLIĞI</h3>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display:block; margin-bottom:8px; font-size:0.8rem; color:var(--text-muted);">Taktik Diziliş</label>
+                        <select id="select-tactic">
+                            <option value="balanced">Dengeli (Standard)</option>
+                            <option value="offensive">Hücum (Hızlı Oyun)</option>
+                            <option value="defensive">Defansif (Güvenli)</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display:block; margin-bottom:8px; font-size:0.8rem; color:var(--text-muted);">Maç Odak Noktası</label>
+                        <select id="select-focus">
+                            <option value="goals">Gol Atmaya Odaklan</option>
+                            <option value="team">Takıma Destek Ver</option>
+                            <option value="stamina">Kondisyonunu Koru</option>
+                        </select>
+                    </div>
+
+                    <button id="btn-play-match" class="btn btn-primary" style="width:100%;">MAÇI BAŞLAT ⚽</button>
+                    <button id="btn-cancel-pre-match" class="btn btn-secondary" style="width:100%; margin-top:10px;">GERİ DÖN</button>
+                </div>
+            </div>
+
+            <!-- STADYUM GİRİŞ ANİMASYONU -->
+            <div id="screen-stadium-entry" class="game-screen" style="padding:0; background: #000; justify-content: center; align-items: center; z-index: 5000;">
+                <div class="stadium-cinematic-bg"></div>
+                <div class="cinematic-overlay">
+                    <div class="match-intro-text">
+                        <span class="intro-subtitle" id="intro-subtitle">DEV MAÇ HEYECANI</span>
+                        <h2 class="intro-title" id="intro-title">DERBİ GÜNÜ</h2>
+                        <div class="intro-divider"></div>
+                        <p class="intro-venue" id="intro-venue">DÜNYA ARENASI</p>
+                    </div>
+                </div>
+                <div class="crowd-flash"></div>
+            </div>
+
+            <div id="screen-match" class="game-screen" style="padding:0;">
+                <div class="match-header">
+                    <div class="scoreboard-compact">
+                        <div class="team-box">
+                            <div class="name">EV SAHIBI</div>
+                            <div id="match-score-team" class="score">0</div>
+                        </div>
+                        <div class="timer-box" id="match-timer">00'</div>
+                        <div class="team-box">
+                            <div class="name">RAKIP</div>
+                            <div id="match-score-opp" class="score">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="commentary-panel" id="match-commentary-list" style="flex:1; padding:20px; overflow-y:auto; background: var(--bg-dark);"></div>
+            </div>
+
+            <div id="screen-gameplay" class="game-screen" style="background: #0a0a0a; justify-content: flex-start; align-items: stretch; padding:0;">
+                <canvas id="pitch-canvas" style="width:100%; height:100%; display:block;"></canvas>
+            </div>
+
+            <!-- MAÇ SONUCU EKRANI -->
+            <div id="screen-results" class="game-screen">
+                <div class="results-summary-container">
+                    <div id="match-summary-card" class="modern-card summary-card">
+                        <div class="summary-header">
+                            <span class="badge-gold">MAÇ ÖZETİ</span>
+                            <div id="badge-motm" class="motm-badge" style="display: none;">M.O.T.M</div>
+                        </div>
+                        
+                        <div class="summary-score-row">
+                            <div id="results-score" class="score-display">2 - 1</div>
+                        </div>
+
+                        <div class="summary-stats-grid">
+                            <div class="summary-stat-item">
+                                <span class="label">GOL</span>
+                                <span id="summary-goals" class="value">0</span>
+                            </div>
+                            <div class="summary-stat-item">
+                                <span class="label">ASİST</span>
+                                <span id="summary-assists" class="value">0</span>
+                            </div>
+                            <div class="summary-stat-item">
+                                <span class="label">PUAN</span>
+                                <span id="txt-match-rating" class="value">6.0</span>
+                            </div>
+                            <div class="summary-stat-item">
+                                <span class="label">TARAFTAR</span>
+                                <span id="summary-fans" class="value">+0</span>
+                            </div>
+                        </div>
+
+                        <div id="txt-match-rating-label" class="rating-label">ORTALAMA</div>
+                    </div>
+
+                    <div class="flex-column gap-10" style="width: 100%;">
+                        <button id="btn-save-summary" class="btn btn-secondary" style="width: 100%;">📸 ÖZETİ KAYDET</button>
+                        <button id="btn-to-press" class="btn btn-primary" style="width: 100%;">BASIN TOPLANTISI 🎤</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAZARLIK EKRANI -->
+            <div id="screen-negotiation" class="game-screen">
+                <div class="modern-card text-center">
+                    <h3 id="neg-title">MÜZAKERE</h3>
+                    <div id="neg-icon" style="font-size: 3.5rem; margin: 20px 0;">🤝</div>
+                    
+                    <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--glass-border);">
+                        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px;">Teklif Edilen Bonus</div>
+                        <div id="neg-current-bonus" style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">$150 / Maç</div>
+                    </div>
+
+                    <div id="neg-options" class="flex-column gap-10"></div>
+                    
+                    <div id="neg-patience-container" style="margin-top: 30px;">
+                        <div class="status-label-row">
+                            <span>Sponsor Sabrı</span>
+                            <span id="txt-neg-patience">100%</span>
+                        </div>
+                        <div class="progress-track"><div id="bar-neg-patience" class="progress-fill" style="width: 100%; background: var(--gold);"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BASIN TOPLANTISI EKRANI -->
+            <div id="screen-press" class="game-screen">
+                <div class="modern-card">
+                    <h3>BASIN TOPLANTISI 🎤</h3>
+                    <p id="txt-press-question" style="font-size: 1.1rem; margin-bottom: 25px; line-height: 1.6;"></p>
+                    <div id="press-options" class="flex-column gap-10"></div>
+                </div>
+            </div>
+
+            <!-- TICARI ETKINLIK -->
+            <div id="screen-commercial" class="game-screen">
+                <div class="modern-card text-center">
+                    <h3 id="comm-title">ETKİNLİK</h3>
+                    <div id="comm-icon" style="font-size: 4.5rem; margin: 30px 0;">📸</div>
+                    <p id="comm-description" style="font-size: 1.2rem; margin-bottom: 30px; line-height: 1.5;"></p>
+                    <div id="comm-options" class="flex-column gap-10"></div>
+                </div>
+            </div>
+
+            <!-- CUSTOM NOTIFICATION OVERLAY -->
+            <div id="game-notification" class="notification-overlay">
+                <div class="modern-card notification-card">
+                    <div id="notif-icon" style="font-size: 2.5rem; margin-bottom: 15px;">ℹ️</div>
+                    <p id="notif-message" style="margin-bottom: 20px; font-weight: 600;"></p>
+                    <button id="notif-btn" class="btn btn-primary" style="width: 100%;">TAMAM</button>
+                    <button id="notif-cancel-btn" class="btn btn-secondary" style="width: 100%; margin-top: 10px; display: none;">İPTAL</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
