@@ -1,4 +1,4 @@
-import { CareerManager } from './CareerManager.js';
+import { CareerManager } from './KariyerYöneticisi.js';
 import { MomentManager } from './MomentManager.js';
 import { ObstacleCourseManager } from './ObstacleCourseManager.js';
 
@@ -144,6 +144,28 @@ class Game {
                     this.showStadiumEntry();
                 } else {
                     this.startMatch();
+                }
+            });
+        }
+
+        const btnSkipIntro = document.getElementById('btn-skip-intro');
+        if (btnSkipIntro) {
+            btnSkipIntro.addEventListener('click', () => {
+                if (this.introTimeout) {
+                    clearTimeout(this.introTimeout);
+                }
+                this.startMatch();
+            });
+        }
+
+        const btnSkipMatch = document.getElementById('btn-skip-match');
+        if (btnSkipMatch) {
+            btnSkipMatch.addEventListener('click', () => {
+                if (this.matchInterval) {
+                    clearInterval(this.matchInterval);
+                    this.lastMatchMinute = 90;
+                    this.career.addMatchPerformance(0, 0, this.matchScore.team, this.matchScore.opp);
+                    this.showResults();
                 }
             });
         }
@@ -294,6 +316,15 @@ class Game {
         const currentClubName = this.career.currentClub ? this.career.currentClub.name : "KULÜPSÜZ";
         if (teamNameEl) teamNameEl.textContent = currentClubName;
         if (fixtureHomeEl) fixtureHomeEl.textContent = currentClubName.toUpperCase();
+
+        const fixtureAwayEl = document.getElementById('txt-fixture-away');
+        if (fixtureAwayEl) {
+            if (!this.career.currentOpponent) {
+                const teams = ["Boğaz FC", "Karadeniz Fırtınası", "Ege Aslanları", "Marmara United", "Ankara Güneşi", "İzmir Körfezi", "Trabzon Yıldızları", "Bosphorus Eagles"];
+                this.career.currentOpponent = teams[Math.floor(Math.random() * teams.length)];
+            }
+            fixtureAwayEl.textContent = this.career.currentOpponent.toUpperCase();
+        }
 
         // Contract Status
         const contractStatusEl = document.getElementById('txt-contract-status');
@@ -486,7 +517,7 @@ class Game {
             
             const card = document.createElement('div');
             card.className = 'luxury-item'; 
-            card.style.border = isActive ? '1.5px solid var(--accent-blue)' : '1px solid #eee';
+            card.style.border = isActive ? '1.5px solid var(--accent-blue)' : '1px solid rgba(255, 255, 255, 0.1)';
             card.style.opacity = isUnlocked ? '1' : '0.6';
 
             const finalPassive = Math.floor(deal.passive * luxuryMultiplier);
@@ -539,7 +570,7 @@ class Game {
             
             const card = document.createElement('div');
             card.className = 'luxury-item'; 
-            card.style.border = isActive ? '1.5px solid var(--primary)' : '1px solid #eee';
+            card.style.border = isActive ? '1.5px solid var(--primary)' : '1px solid rgba(255, 255, 255, 0.1)';
             card.style.opacity = isUnlocked ? '1' : '0.6';
 
             const baseBonus = activeDeal ? activeDeal.negotiatedBonus : deal.bonus;
@@ -1065,27 +1096,26 @@ class Game {
         ];
 
         skillData.forEach(skill => {
-            const val = this.career.skills[skill.id];
+            const val = this.career.skills[skill.id] || 0;
             const row = document.createElement('div');
             row.style.display = 'flex';
             row.style.alignItems = 'center';
             row.style.gap = '10px';
-            row.innerHTML = `
-                <span style="width: 60px; font-size: 0.8rem;">${skill.name}</span>
-                <div class="bar-container"><div class="bar-fill blue" style="width: ${val}%;"></div></div>
-                <span style="font-size: 0.8rem; width: 20px;">${val}</span>
-                <button class="btn btn-primary" data-skill="${skill.id}" style="padding: 4px 8px; font-size: 0.6rem; min-width: 40px;">🏋️</button>
-            `;
-            container.appendChild(row);
-        });
-
-        container.querySelectorAll('button').forEach(btn => {
-            btn.onclick = () => {
+            row.style.cursor = 'pointer';
+            row.onclick = () => {
                 this.switchTab('training');
                 document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
                 const trainingNav = document.querySelector('.nav-item[data-tab="training"]');
                 if (trainingNav) trainingNav.classList.add('active');
             };
+            row.innerHTML = `
+                <span style="width: 60px; font-size: 11px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px;">${skill.name}</span>
+                <div class="progress-track" style="flex: 1; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden;">
+                    <div class="progress-fill" style="width: ${val}%; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #00c853, #00e676);"></div>
+                </div>
+                <span style="font-size: 12px; width: 25px; text-align: right; font-weight: 700; color: white;">${val}</span>
+            `;
+            container.appendChild(row);
         });
     }
 
@@ -1190,32 +1220,73 @@ class Game {
     }
 
     startRhythmGame() {
-        const arrows = ['↑', '↓', '←', '→'];
-        const target = document.getElementById('rhythm-target');
-        let currentArrow = '';
-        
-        const nextArrow = () => {
-            if (!this.trainingActive) return;
-            currentArrow = arrows[Math.floor(Math.random() * arrows.length)];
-            target.textContent = currentArrow;
+        const dirMap = { up: '⬆️', down: '⬇️', left: '⬅️', right: '➡️' };
+        const keyMap  = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+                          w: 'up', s: 'down', a: 'left', d: 'right',
+                          W: 'up', S: 'down', A: 'left', D: 'right' };
+        const directions = ['up', 'down', 'left', 'right'];
+
+        let condScore = 0;
+        let condLives = 3;
+        let condCurrent = '';
+        let locked = false; // prevent double-tap during flash
+
+        const arrowEl   = document.getElementById('cond-arrow');
+        const scoreEl   = document.getElementById('cond-score-display');
+        const livesEl   = document.getElementById('cond-lives');
+        const progressEl = document.getElementById('training-progress-text');
+
+        const updateLives = () => {
+            livesEl.textContent = '❤️'.repeat(condLives) + '🖤'.repeat(3 - condLives);
         };
 
-        nextArrow();
-
-        window.onkeydown = (e) => {
+        const showNext = () => {
             if (!this.trainingActive) return;
-            const keyMap = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→' };
-            if (keyMap[e.key] === currentArrow) {
-                this.trainingScore++;
-                document.getElementById('training-progress-text').textContent = `${this.trainingScore} / 20`;
-                if (this.trainingScore >= 20) this.completeTraining(true);
-                else nextArrow();
+            condCurrent = directions[Math.floor(Math.random() * 4)];
+            arrowEl.textContent = dirMap[condCurrent];
+            arrowEl.style.filter = 'none';
+            scoreEl.textContent = condScore;
+            progressEl.textContent = `${condScore} / 20`;
+            locked = false;
+        };
+
+        const handleTap = (dir) => {
+            if (!this.trainingActive || locked) return;
+            locked = true;
+
+            if (dir === condCurrent) {
+                condScore++;
+                arrowEl.style.filter = 'hue-rotate(120deg) brightness(1.4)'; // green flash
+                if (condScore >= 20) {
+                    setTimeout(() => this.completeTraining(true, 'Kondisyon Parkuru Tamamlandı!'), 400);
+                    return;
+                }
             } else {
-                this.trainingLives--;
-                if (this.trainingLives <= 0) this.completeTraining(false, "Canlar Tükendi!");
+                condLives--;
+                updateLives();
+                arrowEl.style.filter = 'hue-rotate(300deg) brightness(1.4)'; // red flash
+                if (condLives <= 0) {
+                    setTimeout(() => this.completeTraining(false, 'Canlar Tükendi!'), 400);
+                    return;
+                }
             }
+            setTimeout(showNext, 350);
         };
+
+        // Expose to HTML onclick handlers
+        window._condTap = handleTap;
+
+        // Keyboard support
+        this._condKeyHandler = (e) => {
+            const dir = keyMap[e.key];
+            if (dir) { e.preventDefault(); handleTap(dir); }
+        };
+        window.addEventListener('keydown', this._condKeyHandler);
+
+        updateLives();
+        showNext();
     }
+
 
     startSpeedGame() {
         const ctx = document.getElementById('training-canvas-2d').getContext('2d');
@@ -1280,8 +1351,18 @@ class Game {
         this.trainingActive = false;
         document.getElementById('training-rhythm-ui').style.display = 'none';
         if (this.trainingTimerInterval) clearInterval(this.trainingTimerInterval);
+
+        // Cleanup keyboard handler from rhythm game
+        if (this._condKeyHandler) {
+            window.removeEventListener('keydown', this._condKeyHandler);
+            this._condKeyHandler = null;
+        }
+        window._condTap = null;
         
-        if (this.trainingSkillId === 'stamina') this.staminaManager.stop();
+        // staminaManager is the old ObstacleCourseManager (canvas-based) — only call stop if it's active
+        if (this.trainingSkillId === 'stamina' && this.staminaManager && typeof this.staminaManager.stop === 'function' && this.staminaManager.active) {
+            this.staminaManager.stop();
+        }
 
         if (!this.career.skipEnergy) this.career.drainEnergy(20);
         const passiveEarned = this.career.processPassiveIncome();
@@ -1326,7 +1407,7 @@ class Game {
         }
 
         const teamName = this.career.currentClub ? this.career.currentClub.name : 'TAKIM';
-        const oppName  = document.getElementById('txt-fixture-away')?.textContent || 'RAKİP';
+        const oppName  = this.career.currentOpponent || document.getElementById('txt-fixture-away')?.textContent || 'RAKİP';
         this.momentManager.reset(this.career.skills, {
             team:      teamName,
             opp:       oppName,
@@ -1358,13 +1439,13 @@ class Game {
         }
 
         // Wait for animation to finish before starting match
-        setTimeout(() => {
+        this.introTimeout = setTimeout(() => {
             this.startMatch();
-        }, 4500); // Cinematic lasts about 4.5 seconds before transitioning
+        }, 2000); // Cinematic lasts about 2.0 seconds before transitioning
     }
 
     startMatch() {
-        this.switchScreen('screen-match');
+        this.switchScreen('screen-gameplay');
         const commentary = document.getElementById('match-commentary-list');
         commentary.innerHTML = '';
         
@@ -1373,10 +1454,38 @@ class Game {
         this.matchPlayerStats = { goals: 0, assists: 0 };
         this.lastMatchMinute = 0;
 
+        const teamName = this.career.currentClub ? this.career.currentClub.name : 'TAKIM';
+        const oppName  = this.career.currentOpponent || document.getElementById('txt-fixture-away')?.textContent || 'RAKİP';
+
+        const homeNameEl = document.getElementById('match-header-home-name');
+        const awayNameEl = document.getElementById('match-header-away-name');
+        if (homeNameEl) homeNameEl.textContent = teamName.toUpperCase();
+        if (awayNameEl) awayNameEl.textContent = oppName.toUpperCase();
+
         // Reset Scoreboard UI
         document.getElementById('match-score-team').textContent = '0';
         document.getElementById('match-score-opp').textContent = '0';
         document.getElementById('match-timer').textContent = "00'";
+
+        // Re-size canvas immediately so drawPitch works
+        const canvas = document.getElementById('pitch-canvas');
+        if (canvas) {
+            const r = canvas.getBoundingClientRect();
+            if (r.width > 0) {
+                canvas.width  = Math.round(r.width);
+                canvas.height = Math.round(r.height);
+            }
+        }
+
+        // Initialize momentManager to draw pitch background immediately
+        this.momentManager.reset(this.career.skills, {
+            team:      teamName,
+            opp:       oppName,
+            scoreHome: 0,
+            scoreAway: 0,
+            minute:    0,
+        });
+        this.momentManager.draw();
         
         // Match chance based on focus
         const focus = this.matchSettings.focus;
@@ -1408,7 +1517,7 @@ class Game {
             "Topla oynama oranlarında üstünlüğümüz devam ediyor."
         ];
 
-        const interval = setInterval(() => {
+        this.matchInterval = setInterval(() => {
             minute += Math.floor(Math.random() * 3) + 2; // Random jumps (2-4 mins)
             if (minute > 90) minute = 90;
 
@@ -1422,10 +1531,10 @@ class Game {
                 entry.innerHTML = `<span class="ticker-time">HT</span> İlk yarı sona erdi. Takımlar dinlenmeye gidiyor.`;
             } else if (minute >= this.momentMinuteTrigger && minute < this.momentMinuteTrigger + 5) {
                 this.momentMinuteTrigger = minute + 25 + Math.random() * 20;
-                this.triggerMoment(interval);
+                this.triggerMoment(this.matchInterval);
                 return;
             } else if (minute >= 90) {
-                clearInterval(interval);
+                clearInterval(this.matchInterval);
                 entry.innerHTML = `<span class="ticker-time">FT</span> Maç sona erdi! Müthiş bir 90 dakikayı geride bıraktık.`;
                 this.career.addMatchPerformance(0, 0, this.matchScore.team, this.matchScore.opp);
                 this.showResults();
@@ -1472,28 +1581,28 @@ class Game {
             }
             
             if (type !== 'assist') {
-                 // Auto-continue after 2 seconds for goals
                  this.notify(randomComment + " " + (message || ""), "⚽");
                  setTimeout(() => {
                     const overlay = document.getElementById('game-notification');
                     if (overlay.classList.contains('active')) {
                         overlay.classList.remove('active');
-                        this.switchScreen('screen-match');
                         this.resumeMatch();
                     }
                  }, 2000);
             } else {
                 this.notify(randomComment + " " + (message || ""), "⚽", () => {
-                    this.switchScreen('screen-match');
                     this.resumeMatch();
                 });
             }
         } else {
             this.notify(message || "KAÇTI!", "❌", () => {
-                this.switchScreen('screen-match');
                 this.resumeMatch();
             });
         }
+
+        // Safety check to ensure canvas is visible
+        const canvas = document.getElementById('pitch-canvas');
+        if (canvas) canvas.style.display = 'block';
     }
 
     resumeMatch() {

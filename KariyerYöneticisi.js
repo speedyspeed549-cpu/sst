@@ -16,7 +16,8 @@ export class CareerManager {
             passing: 20,
             dribbling: 20,
             pace: 20,
-            stamina: 20
+            stamina: 20,
+            vision: 20
         };
         this.xp = 0;
         this.division = 3;
@@ -263,6 +264,7 @@ export class CareerManager {
         this.stats.goals += goals;
         this.stats.assists += assists;
         this.stats.matches += 1;
+        this.currentOpponent = null;
 
         // Record player team result in standings
         this.recordMatchResult(this.currentLeagueId, this.team, teamScore, oppScore);

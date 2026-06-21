@@ -11,8 +11,8 @@
     --danger: #ef4444;
     --gold: #f59e0b;
     --gold-glow: rgba(245, 158, 11, 0.3);
-    --text-main: #1e293b;
-    --text-muted: #64748b;
+    --text-main: #ffffff;
+    --text-muted: rgba(255, 255, 255, 0.7);
     --font-main: 'Poppins', sans-serif;
     --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
@@ -32,7 +32,7 @@ body, html {
     overflow: hidden;
     background-color: var(--bg-dark);
     background-image: 
-        linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.8)),
+        linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
         url('./assets/stadium_bg.webp');
     background-size: cover;
     background-position: center;
@@ -87,14 +87,15 @@ body, html {
 
 /* UI Panels & Cards */
 .modern-card, .player-status-card {
-    background: var(--card-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
     padding: 20px;
     margin-bottom: 16px;
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    color: white;
 }
 
 .header-bar {
@@ -146,20 +147,23 @@ body, html {
 }
 
 .resource-pill {
-    background: var(--card-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     padding: 10px 5px;
     border-radius: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    color: white;
 }
 
-.resource-pill .val { font-weight: 800; font-size: 0.9rem; }
-.resource-pill .label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+.resource-pill span:first-child { text-shadow: 0 0 10px rgba(255,255,255,0.4); font-size: 1.5rem; }
+.resource-pill .val { font-weight: 700; font-size: 28px; color: white; }
+.resource-pill .label { font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 700; letter-spacing: 2px; }
 
 /* Navigation */
 .bottom-nav-bar {
@@ -469,11 +473,12 @@ body, html {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: white;
+    background: rgba(255, 255, 255, 0.05);
     padding: 12px;
     border-radius: 16px;
     margin-bottom: 10px;
-    border: 1px solid #f1f5f9;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
 }
 
 .luxury-info { display: flex; align-items: center; gap: 12px; }
@@ -589,4 +594,131 @@ body, html {
 .disabled {
     opacity: 0.5;
     pointer-events: none;
+}
+
+/* MatchDay Star UI Additions */
+.glass-card {
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+.creation-input-group label {
+    color: white !important;
+    letter-spacing: 2px !important;
+    font-size: 11px !important;
+}
+
+#input-player-name, #select-team {
+    background: transparent !important;
+    color: white !important;
+    border: none !important;
+    border-bottom: 1px solid white !important;
+    border-radius: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding-left: 0 !important;
+}
+
+#select-team option {
+    background: var(--bg-dark);
+    color: white;
+}
+
+.start-career-btn {
+    background: linear-gradient(135deg, #00c853, #00e676) !important;
+    border-radius: 50px !important;
+    font-weight: 800 !important;
+    letter-spacing: 3px !important;
+    box-shadow: 0 4px 20px rgba(0, 200, 83, 0.4) !important;
+    transition: all 0.3s ease !important;
+    width: 100%;
+    margin-top: 25px;
+}
+
+.start-career-btn:hover {
+    transform: scale(1.03) !important;
+    filter: brightness(1.1) !important;
+}
+
+.matchday-title-container {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.matchday-title {
+    margin: 0;
+    font-size: 48px;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 30px rgba(0, 200, 83, 0.8);
+    animation: pulse-title 3s infinite alternate;
+    position: relative;
+    z-index: 2;
+}
+
+.subtitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes pulse-title {
+    0% { transform: scale(1); text-shadow: 0 0 20px rgba(0, 200, 83, 0.6); }
+    100% { transform: scale(1.02); text-shadow: 0 0 40px rgba(0, 200, 83, 1); }
+}
+
+.light-rays {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0,200,83,0.3) 0%, rgba(0,0,0,0) 60%);
+    transform: translate(-50%, -50%);
+    animation: ray-pulse 4s infinite alternate;
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes ray-pulse {
+    0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.9); }
+    100% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+/* Creation Screen Stadium Background */
+.creation-screen {
+    position: relative;
+    justify-content: center;
+    align-items: center;
+}
+
+.creation-stadium-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url('./assets/stadium_bg.webp') center / cover no-repeat;
+    z-index: 0;
+}
+
+.creation-stadium-bg::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.creation-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }

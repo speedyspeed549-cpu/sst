@@ -58,6 +58,18 @@ export class MomentManager {
         this.pitch = {};
 
         this.animFrameId = null;
+
+        // ── Celebration state ──
+        this.goalCelebration = false;    // true while celebration plays
+        this.celebrationTimer = 0;       // counts up (frames)
+        this.celebrationDuration = 150;  // ~2.5 s at 60fps
+        this.confetti = [];              // particles
+        this.celebrationAngle = 0;       // hero spin angle
+        this.shakeFrames = 0;            // canvas shake
+        this.shakeX = 0;                 // current shake offset
+        this.whiteFlash = 0;             // 0-1 overlay
+        this.scorePopTimer = 0;          // +1 pop
+
         this.initEventListeners();
     }
 
@@ -151,10 +163,10 @@ export class MomentManager {
 
         // 4 Red defenders
         this.opponents = [
-            { x: cx - 70, y: p.y + p.h * 0.28, radius: 10, color: '#e74c3c', label: 'DEF', vx: 0, vy: 0 },
-            { x: cx + 70, y: p.y + p.h * 0.28, radius: 10, color: '#e74c3c', label: 'DEF', vx: 0, vy: 0 },
-            { x: cx - 35, y: p.y + p.h * 0.40, radius: 10, color: '#e74c3c', label: 'DEF', vx: 0, vy: 0 },
-            { x: cx + 35, y: p.y + p.h * 0.40, radius: 10, color: '#e74c3c', label: 'DEF', vx: 0, vy: 0 },
+            { x: cx - 70, y: p.y + p.h * 0.28, baseX: cx - 70, baseY: p.y + p.h * 0.28, radius: 10, color: '#e74c3c', label: 'DEF', vx: 0, vy: 0, reactionTimer: 0 },
+            { x: cx + 70, y: p.y + p.h * 0.28, baseX: cx + 70, baseY: p.y + p.h * 0.28, radius: 10, color: '#e74c3c', label: 'DEF', vx: 0, vy: 0, reactionTimer: 0 },
+            { x: cx - 35, y: p.y + p.h * 0.40, baseX: cx - 35, baseY: p.y + p.h * 0.40, radius: 10, color: '#e74c3c', label: 'DEF', vx: 0, vy: 0, reactionTimer: 0 },
+            { x: cx + 35, y: p.y + p.h * 0.40, baseX: cx + 35, baseY: p.y + p.h * 0.40, radius: 10, color: '#e74c3c', label: 'DEF', vx: 0, vy: 0, reactionTimer: 0 },
         ];
     }
 
@@ -316,9 +328,14 @@ export class MomentManager {
     // ─────────────────────────── GAME LOOP ───────────────────────────
 
     start() {
+        this.isActive = true;
+        this.isBallInFlight = false;
+        this.isDragging = false;
+        this.momentEnded = false;
+        
         if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
         const loop = () => {
-            if (!this.isActive) return;
+            // update() handles celebration, physics, and idle states internally
             this.update();
             this.draw();
             this.animFrameId = requestAnimationFrame(loop);
@@ -327,12 +344,65 @@ export class MomentManager {
     }
 
     update() {
+        // Celebration tick (runs even when isActive=false)
+        if (this.goalCelebration) {
+            this.celebrationTimer++;
+            // Spin the hero 360 degrees over 60 frames
+            this.celebrationAngle = (this.celebrationAngle + 6) % 360;
+            // Hero "jump" - oscillate y by ±20px
+            this.hero.celebY = this.hero.baseY + Math.sin(this.celebrationTimer * 0.2) * 20;
+            // Teammates run toward hero
+            this.teammates.forEach(tm => {
+                const dx = this.hero.x - tm.x, dy = this.hero.y - tm.y;
+                const d = Math.hypot(dx, dy);
+                if (d > 10) { tm.x += dx / d * 3; tm.y += dy / d * 3; }
+            });
+            // Update confetti particles
+            this.confetti.forEach(p => {
+                p.x += p.vx; p.y += p.vy; p.vy += 0.4; // gravity
+                p.life -= 1;
+                p.vx *= 0.97;
+            });
+            this.confetti = this.confetti.filter(p => p.life > 0);
+            // Shake
+            if (this.shakeFrames > 0) {
+                this.shakeFrames--;
+                this.shakeX = (this.shakeFrames % 2 === 0) ? 10 : -10;
+                this.canvas.style.transform = `translateX(${this.shakeX}px)`;
+            } else {
+                this.canvas.style.transform = '';
+            }
+            // White flash fade
+            if (this.whiteFlash > 0) this.whiteFlash = Math.max(0, this.whiteFlash - 0.05);
+            // Score pop
+            if (this.scorePopTimer > 0) this.scorePopTimer--;
+            return; // skip normal physics
+        }
+
         if (this.slowMoTimer > 0) {
             this.slowMoTimer--;
             if (this.slowMoTimer % 2 === 0) return; // 0.5x speed
         }
 
         if (this.dribbleCooldown > 0) this.dribbleCooldown--;
+
+        // Slow-motion tension when ball approaches goal (within 80px of goal line)
+        if (this.isBallInFlight && this.ball.y < this.pitch.y + 100 && this.ball.vy < 0) {
+            // Apply 0.3x speed by scaling velocities
+            const origVx = this.ball.vx, origVy = this.ball.vy;
+            this.ball.vx *= 0.3;
+            this.ball.vy *= 0.3;
+            this.ball.x += this.ball.vx;
+            this.ball.y += this.ball.vy;
+            this.ball.vx = origVx * 0.982;
+            this.ball.vy = origVy * 0.982;
+            this.ball.trail.push({ x: this.ball.x, y: this.ball.y });
+            if (this.ball.trail.length > 12) this.ball.trail.shift();
+            this._updateKeeper();
+            this._updateDefenders();
+            this._checkBallState();
+            return;
+        }
 
         if (!this.isBallInFlight) {
             // Gentle teammate drift
@@ -379,25 +449,99 @@ export class MomentManager {
         // Clamp keeper inside goal area + diving range
         this.goalkeeper.x = Math.max(this.goalX - 20, Math.min(this.goalX + this.goalW + 20, this.goalkeeper.x));
 
-        // Defender pressure (increased)
+        // Balanced Defender AI
+        let eligiblePressers = [];
+        
         this.opponents.forEach(op => {
-            if (op.stunned > 0) { op.stunned--; return; }
+            if (op.stunned > 0) return;
             const tdx = this.ball.x - op.x;
             const tdy = this.ball.y - op.y;
             const td = Math.hypot(tdx, tdy);
-            const speed = 2.0; 
-            if (td > 5) {
-                op.x += (tdx / td) * speed;
-                op.y += (tdy / td) * speed;
+            
+            eligiblePressers.push({ op, td });
+        });
+
+        // Sort by distance and pick up to 2
+        eligiblePressers.sort((a, b) => a.td - b.td);
+        const pressers = eligiblePressers.slice(0, 2).map(p => p.op);
+
+        this.opponents.forEach(op => {
+            if (op.stunned > 0) { op.stunned--; return; }
+            
+            if (pressers.includes(op)) {
+                // Pressing logic
+                const tdx = this.ball.x - op.x;
+                const tdy = this.ball.y - op.y;
+                const td = Math.hypot(tdx, tdy);
+                const speed = this.dribbleCooldown > 0 ? 0.8 : 1.5;
+                if (td > 5) {
+                    op.x += (tdx / td) * speed;
+                    op.y += (tdy / td) * speed;
+                }
+            } else {
+                // Return to base logic
+                const bdx = op.baseX - op.x;
+                const bdy = op.baseY - op.y;
+                const bd = Math.hypot(bdx, bdy);
+                if (bd > 2) {
+                    op.x += (bdx / bd) * 1.5;
+                    op.y += (bdy / bd) * 1.5;
+                }
             }
         });
 
-        // Slow motion trigger near goal
-        if (this.ball.y < this.pitch.y + 100 && this.ball.vy < 0 && this.slowMoTimer <= 0 && Math.abs(this.ball.vx) + Math.abs(this.ball.vy) > 8) {
-            this.slowMoTimer = 40;
-        }
+        // Slow motion trigger (old mechanism kept for non-near-goal slow-mo)
+        // (near-goal slow-mo is handled at top of update())
 
-        // Pass receive check
+        this._updateKeeper();
+        this._updateDefenders();
+        this._checkBallState();
+    }
+
+    // ─── Helper: keeper AI ───
+    _updateKeeper() {
+        this.goalkeeper.framesSinceUpdate++;
+        const reactionFrames = Math.round(0.4 * 60); // 0.4s delay
+        if (this.goalkeeper.framesSinceUpdate >= reactionFrames) {
+            this.keeperTargetX = this.ball.x;
+            this.goalkeeper.framesSinceUpdate = 0;
+        }
+        const kspeed = 2.5; // 2.5px/frame — physical movement only
+        const kdx = this.keeperTargetX - this.goalkeeper.x;
+        if (Math.abs(kdx) > kspeed) {
+            this.goalkeeper.x += Math.sign(kdx) * kspeed;
+        } else {
+            this.goalkeeper.x = this.keeperTargetX;
+        }
+        this.goalkeeper.x = Math.max(this.goalX - 20, Math.min(this.goalX + this.goalW + 20, this.goalkeeper.x));
+    }
+
+    // ─── Helper: defender AI ───
+    _updateDefenders() {
+        const eligiblePressers = [];
+        this.opponents.forEach(op => {
+            if (op.stunned > 0) return;
+            eligiblePressers.push({ op, td: Math.hypot(this.ball.x - op.x, this.ball.y - op.y) });
+        });
+        eligiblePressers.sort((a, b) => a.td - b.td);
+        const pressers = eligiblePressers.slice(0, 2).map(p => p.op);
+        this.opponents.forEach(op => {
+            if (op.stunned > 0) { op.stunned--; return; }
+            if (pressers.includes(op)) {
+                const tdx = this.ball.x - op.x, tdy = this.ball.y - op.y;
+                const td = Math.hypot(tdx, tdy);
+                const speed = this.dribbleCooldown > 0 ? 0.8 : 1.5;
+                if (td > 5) { op.x += (tdx / td) * speed; op.y += (tdy / td) * speed; }
+            } else {
+                const bdx = op.baseX - op.x, bdy = op.baseY - op.y;
+                const bd = Math.hypot(bdx, bdy);
+                if (bd > 2) { op.x += (bdx / bd) * 1.5; op.y += (bdy / bd) * 1.5; }
+            }
+        });
+    }
+
+    // ─── Helper: ball boundary + stop checks ───
+    _checkBallState() {
         if (this.currentPassTarget) {
             const dt = this.currentPassTarget;
             const d = Math.hypot(this.ball.x - dt.x, this.ball.y - dt.y);
@@ -424,7 +568,7 @@ export class MomentManager {
         // Pitch bounds (out of play)
         const p = this.pitch;
         if (this.ball.x < p.x || this.ball.x > p.x + p.w) {
-            this.endMoment(false, 'ÖNCE ÇIKTI!');
+            if (!this.momentEnded) this.endMoment(false, 'TACA ÇIKTI!');
             return;
         }
         if (this.ball.y < p.y - 10) {
@@ -433,46 +577,125 @@ export class MomentManager {
             return;
         }
         if (this.ball.y > p.y + p.h + 10) {
-            this.endMoment(false, 'ARKADAN ÇIKTI!');
+            if (!this.momentEnded) this.endMoment(false, 'ARKADAN ÇIKTI!');
             return;
         }
 
-        // Ball almost stopped
-        if (Math.hypot(this.ball.vx, this.ball.vy) < 0.15) {
-            this.endMoment(false, 'TOP DURDU!');
+    }
+
+    // ─── Helper: triggerGoalCelebration ───
+    triggerGoalCelebration() {
+        this.goalCelebration = true;
+        this.celebrationTimer = 0;
+        this.shakeFrames = 16; // 8 shakes x 2 directions
+        this.whiteFlash = 1.0;
+        this.scorePopTimer = 60;
+        this.hero.baseY = this.hero.y; // store for oscillation
+        this.celebrationAngle = 0;
+
+        // Spawn 50 confetti particles
+        this.confetti = [];
+        const cx = this.W / 2, cy = this.H / 2;
+        const colors = ['#2ecc71','#f1c40f','#ffffff','#FFD700','#00ff88','#ff4757'];
+        for (let i = 0; i < 50; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 4 + Math.random() * 8;
+            this.confetti.push({
+                x: cx, y: cy,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 4,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                size: 4 + Math.random() * 6,
+                life: 60 + Math.random() * 30,
+                maxLife: 90,
+            });
         }
+
+        // Play crowd roar
+        try { new Audio('assets/audio/crowd_goal_sfx.mp3').play().catch(() => {}); } catch(e) {}
+
+        // Score counter bounce via CSS
+        const scoreEl = document.getElementById('match-score-team');
+        if (scoreEl) {
+            scoreEl.style.transition = 'transform 0.15s, color 0.2s';
+            scoreEl.style.color = '#FFD700';
+            scoreEl.style.transform = 'translateY(-20px) scale(1.4)';
+            setTimeout(() => {
+                scoreEl.style.transform = 'translateY(0) scale(1)';
+                setTimeout(() => { scoreEl.style.color = ''; }, 1000);
+            }, 250);
+        }
+
+        // Auto-continue after 2.5s
+        setTimeout(() => {
+            this.goalCelebration = false;
+            this.confetti = [];
+            this.canvas.style.transform = '';
+            this.onResult(true, 'MUHTEŞEM GOOOL!');
+        }, 2500);
     }
 
     checkGoal() {
         const bx = this.ball.x;
-        if (bx >= this.goalX && bx <= this.goalX + this.goalW) {
-            // Check keeper save
-            const kd = Math.hypot(bx - this.goalkeeper.x, this.pitch.y - this.goalkeeper.y);
-            
-            // Unsaveable zones (Top corners)
-            const isTopCorner = (bx < this.goalX + 15 || bx > this.goalX + this.goalW - 15);
-            
-            // Diving range is 80px
-            const canReach = kd < 80;
-            const savedByCenter = Math.abs(bx - this.goalkeeper.x) < 15;
+        const goalLeft  = this.goalX;
+        const goalRight = this.goalX + this.goalW;
 
-            if ((savedByCenter || canReach) && !isTopCorner) {
+        if (bx >= goalLeft && bx <= goalRight) {
+            const goalCenter = (goalLeft + goalRight) / 2;
+            const keeperX    = this.goalkeeper.x;
+
+            // --- Zone definitions ---
+            const isTopLeftCorner  = bx < goalLeft  + 25;
+            const isTopRightCorner = bx > goalRight - 25;
+            const isCenter         = Math.abs(bx - goalCenter) < 30;
+            const keeperReach      = 55;
+            const distToKeeper     = Math.abs(bx - keeperX);
+
+            let isSaved = false;
+
+            if (isTopLeftCorner || isTopRightCorner) {
+                // Corners: ALWAYS GOAL — keeper cannot reach
+                isSaved = false;
+            } else if (isCenter) {
+                // Dead center: ALWAYS SAVED
+                isSaved = true;
+            } else if (distToKeeper < keeperReach) {
+                // Within reach: 60% save, 40% goal
+                isSaved = Math.random() < 0.60;
+            } else {
+                // Outside reach: ALWAYS GOAL
+                isSaved = false;
+            }
+
+            if (isSaved) {
+                // Keeper physically dives to ball (capped by reach)
+                const diveDir = Math.sign(bx - keeperX);
+                this.goalkeeper.x += diveDir * Math.min(keeperReach, distToKeeper);
                 this.savedText = 'SAVED!';
                 this.savedTimer = 90;
-                this.endMoment(false, 'KALECİ KURTARDI!');
+                if (!this.momentEnded) this.endMoment(false, 'KALECİ KURTARDI!');
             } else {
-                this.goalFlash = 60;
-                this.goalText = 'GOOOL! ⚽';
-                try { new Audio('assets/audio/crowd_goal_sfx.mp3').play().catch(() => {}); } catch(e) {}
-                this.endMoment(true, 'MUHTEŞEM GOOOL!');
+                // Keeper dives but can't reach — GOAL!
+                const diveDir = Math.sign(bx - keeperX);
+                this.goalkeeper.x += diveDir * Math.min(keeperReach, distToKeeper);
+                if (!this.momentEnded) {
+                    this.momentEnded = true;
+                    this.isActive = false;
+                    this.isBallInFlight = false;
+                    this.triggerGoalCelebration(); // full celebration sequence
+                }
             }
         } else {
-            this.endMoment(false, 'DIŞARI!');
+            if (!this.momentEnded) this.endMoment(false, 'DIŞARI!');
         }
     }
 
     endMoment(success, message, type = 'goal') {
-        this.isActive = false;
+        if (this.momentEnded) return;
+        this.momentEnded = true;
+        
+        // Ensure requestAnimationFrame keeps rendering
+        this.isActive = false; // Stops physics updates
         this.isBallInFlight = false;
         
         if (this.isTraining) {
@@ -498,9 +721,10 @@ export class MomentManager {
             }
         }
 
-        // One final draw to show flash/goal text
-        this.draw();
-        setTimeout(() => this.onResult(success, message, type), 900);
+        // Wait 1.5 seconds to show result fully without freezing
+        setTimeout(() => {
+            this.onResult(success, message, type);
+        }, 1500);
     }
 
     // ─────────────────────────── DRAWING ───────────────────────────
@@ -519,7 +743,14 @@ export class MomentManager {
         this.drawBall();
         if (this.isDragging) this.drawAimLine();
         this.drawHUD();
-        if (this.goalFlash > 0) this.drawGoalFlash();
+
+        // Celebration layer (on top of everything)
+        if (this.goalCelebration) {
+            this.drawCelebration();
+        } else {
+            if (this.goalFlash > 0) this.drawGoalFlash();
+        }
+
         if (this.savedTimer > 0) this.drawSavedText();
         if (this.commentaryTimer > 0) this.drawCommentary();
         
@@ -889,6 +1120,97 @@ export class MomentManager {
         ctx.shadowColor = '#f39c12';
         ctx.fillText('GOOOL! ⚽', 0, 0);
         ctx.restore();
+    }
+
+    drawCelebration() {
+        const ctx = this.ctx;
+        const t = this.celebrationTimer;  // 0..150
+        const W = this.W, H = this.H;
+
+        // 1. White flash overlay (fades over ~6 frames)
+        if (this.whiteFlash > 0) {
+            ctx.fillStyle = `rgba(255,255,255,${this.whiteFlash})`;
+            ctx.fillRect(0, 0, W, H);
+        }
+
+        // 2. Crowd wave at bottom — flashes of colour strips
+        const waveColors = ['#2ecc71','#f1c40f','#e74c3c','#3498db','#e67e22'];
+        const waveH = 28;
+        for (let i = 0; i < waveColors.length; i++) {
+            const waveAlpha = 0.3 + 0.3 * Math.sin(t * 0.25 + i * 1.2);
+            ctx.fillStyle = waveColors[i].replace(')', `,${waveAlpha})`).replace('rgb', 'rgba');
+            // simple colour blocks
+            ctx.globalAlpha = waveAlpha;
+            ctx.fillStyle = waveColors[i];
+            ctx.fillRect(0, H - waveH - i * 5, W, 8);
+        }
+        ctx.globalAlpha = 1;
+
+        // 3. Confetti particles
+        this.confetti.forEach(p => {
+            const alpha = p.life / p.maxLife;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.ellipse(p.x, p.y, p.size, p.size * 0.5, (t * 5 * Math.PI) / 180, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+
+        // 4. GOOOL! text — animate size 0→ 80px bounce then hold
+        const textProgress = Math.min(t / 24, 1); // 0..1 over 0.4s
+        const bounce = t > 24 ? 1 + 0.2 * Math.sin((t - 24) * 0.2) * Math.exp(-(t - 24) * 0.03) : 0;
+        const textScale = textProgress * (1 + bounce * 0.2);
+        const textAlpha = t > 120 ? Math.max(0, (150 - t) / 30) : 1; // fade last 0.5s
+
+        ctx.save();
+        ctx.globalAlpha = textAlpha;
+        ctx.translate(W / 2, H * 0.38);
+        ctx.scale(textScale, textScale);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        // Black outline
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 8;
+        ctx.lineJoin = 'round';
+        ctx.font = 'bold 80px Poppins, Arial';
+        ctx.shadowBlur = 40;
+        ctx.shadowColor = 'rgba(255,220,0,0.9)';
+        ctx.strokeText('GOOOL! ⚽', 0, 0);
+        // Yellow fill
+        ctx.fillStyle = '#FFE000';
+        ctx.fillText('GOOOL! ⚽', 0, 0);
+        ctx.restore();
+
+        // 5. +1 floating text next to score
+        if (this.scorePopTimer > 0) {
+            const rise = (60 - this.scorePopTimer) * 0.7;
+            const popAlpha = this.scorePopTimer / 60;
+            ctx.save();
+            ctx.globalAlpha = popAlpha;
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 22px Poppins, Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('+1', W * 0.62, 42 - rise);
+            ctx.restore();
+        }
+
+        // 6. "Devam ediyor..." banner in last 0.7s
+        if (t > 107) {
+            const bannerAlpha = (t - 107) / 43;
+            ctx.save();
+            ctx.globalAlpha = bannerAlpha * 0.85;
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(0, H * 0.55, W, 36);
+            ctx.globalAlpha = bannerAlpha;
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Poppins, Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Devam ediyor...', W / 2, H * 0.55 + 18);
+            ctx.restore();
+        }
     }
 
     drawSavedText() {

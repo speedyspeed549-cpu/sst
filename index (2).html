@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pro Kariyer Soccer Simulator</title>
+    <title>MatchDay Star</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script type="importmap">
@@ -21,14 +21,16 @@
         <div class="screen-content">
             
             <!-- AŞAMA 0: OYUNCU YARATMA EKRANI -->
-            <div id="screen-creation" class="game-screen active">
+            <div id="screen-creation" class="game-screen active creation-screen">
+                <div class="creation-stadium-bg"></div>
                 <div class="creation-container">
-                    <div class="text-center" style="margin-bottom: 20px;">
-                        <h1 style="margin:0; color: var(--primary); font-size: 2.2rem; font-weight: 800; letter-spacing: -1px;">PRO KARIYER</h1>
-                        <span class="badge-gold">ELITE SOCCER SIM</span>
+                    <div class="text-center matchday-title-container">
+                        <div class="light-rays"></div>
+                        <h1 class="matchday-title">MatchDay Star</h1>
+                        <span class="subtitle">Kariyerinin Zirvesine Çık</span>
                     </div>
                     
-                    <div class="modern-card">
+                    <div class="modern-card glass-card">
                         <div class="creation-input-group">
                             <label style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; display: block;">Kariyer Adı</label>
                             <input type="text" id="input-player-name" placeholder="Efsane ismini yaz..." value="Yeni Yıldız">
@@ -43,7 +45,7 @@
                             </select>
                         </div>
 
-                        <button id="btn-start-career" class="btn btn-primary" style="margin-top: 25px; width: 100%;">KARİYERİNE BAŞLA</button>
+                        <button id="btn-start-career" class="btn btn-primary start-career-btn">KARİYERE BAŞLA</button>
                     </div>
                 </div>
             </div>
@@ -54,8 +56,8 @@
                     <div class="player-status-card">
                         <div class="player-main-info">
                             <div class="flex-column">
-                                <span id="txt-team-name" style="font-weight: 800; font-size: 1.1rem; color: var(--primary);">Takım İsmi</span>
-                                <span id="txt-weather" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">☀️ Güneşli</span>
+                                <span id="txt-team-name" style="font-weight: 800; font-size: 1.1rem; color: #00e676; background: rgba(0, 200, 83, 0.15); border: 1px solid #00c853; padding: 4px 10px; border-radius: 8px; align-self: flex-start;">Takım İsmi</span>
+                                <span id="txt-weather" style="font-size: 0.7rem; color: rgba(255,255,255,0.7); font-weight: 700; margin-top: 5px;">☀️ Güneşli</span>
                             </div>
                             <div id="status-badge-container" style="display:flex; gap:5px;">
                                 <span id="txt-media-persona" class="title-badge" style="background: rgba(52, 152, 219, 0.1); border-color: var(--accent-blue); color: var(--accent-blue);">Profesyonel</span>
@@ -91,10 +93,10 @@
                             <span id="txt-followers-val" class="val">150</span>
                         </div>
                     </div>
-                    <div class="modern-card" style="margin-bottom: 0; padding: 12px 18px;">
+                    <div class="modern-card" style="margin-bottom: 0; padding: 12px 18px; border-left: 3px solid #00c853;">
                         <div class="flex-column">
-                             <span class="label" style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Toplam Bakiye</span>
-                             <span id="txt-money-val" style="font-size: 1.4rem; font-weight: 900; color: var(--primary);">$500</span>
+                             <span class="label" style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 2px;">Toplam Bakiye</span>
+                             <span id="txt-money-val" style="font-size: 32px; font-weight: 800; color: #00e676;">$500</span>
                         </div>
                     </div>
                 </div>
@@ -103,13 +105,13 @@
                     <div id="tab-content-profile" class="tab-panel active">
                         <div class="modern-card" style="display: flex; justify-content: space-around; text-align: center;">
                             <div>
-                                <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Piyasa Değeri</div>
-                                <div id="txt-market-value" style="font-size: 1.1rem; font-weight: 800; color: var(--primary);">$5,000</div>
+                                <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 2px;">Piyasa Değeri</div>
+                                <div id="txt-market-value" style="font-size: 24px; font-weight: 800; color: #00e676;">$5,000</div>
                             </div>
-                            <div style="width: 1px; background: var(--glass-border);"></div>
+                            <div style="width: 1px; background: rgba(255,255,255,0.1);"></div>
                             <div>
-                                <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Forma Geliri</div>
-                                <div id="txt-jersey-income" style="font-size: 1.1rem; font-weight: 800; color: var(--gold);">$0</div>
+                                <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 2px;">Forma Geliri</div>
+                                <div id="txt-jersey-income" style="font-size: 24px; font-weight: 800; color: #00e676;">$0</div>
                             </div>
                         </div>
 
@@ -122,16 +124,16 @@
                             <h3>Sosyal İlişkiler</h3>
                             <div style="display: flex; flex-direction: column; gap: 15px;">
                                 <div class="rel-item">
-                                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:6px; color: var(--text-muted);"><span>Teknik Direktör</span> <span id="val-rel-coach">50%</span></div>
-                                    <div class="progress-track"><div id="rel-fill-coach" class="progress-fill" style="width: 50%;"></div></div>
+                                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:6px; color: rgba(255,255,255,0.7); text-transform:uppercase; letter-spacing:1px;"><span>Teknik Direktör</span> <span id="val-rel-coach">50%</span></div>
+                                    <div class="progress-track" style="height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1);"><div id="rel-fill-coach" class="progress-fill" style="width: 50%; border-radius: 3px; background: linear-gradient(90deg, #2196f3, #00bcd4);"></div></div>
                                 </div>
                                 <div class="rel-item">
-                                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:6px; color: var(--text-muted);"><span>Takım Arkadaşları</span> <span id="val-rel-team">50%</span></div>
-                                    <div class="progress-track"><div id="rel-fill-team" class="progress-fill" style="width: 50%;"></div></div>
+                                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:6px; color: rgba(255,255,255,0.7); text-transform:uppercase; letter-spacing:1px;"><span>Takım Arkadaşları</span> <span id="val-rel-team">50%</span></div>
+                                    <div class="progress-track" style="height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1);"><div id="rel-fill-team" class="progress-fill" style="width: 50%; border-radius: 3px; background: linear-gradient(90deg, #2196f3, #00bcd4);"></div></div>
                                 </div>
                                 <div class="rel-item">
-                                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:6px; color: var(--text-muted);"><span>Taraftarlar</span> <span id="val-rel-fans">30%</span></div>
-                                    <div class="progress-track"><div id="rel-fill-fans" class="progress-fill" style="width: 30%;"></div></div>
+                                    <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:6px; color: rgba(255,255,255,0.7); text-transform:uppercase; letter-spacing:1px;"><span>Taraftarlar</span> <span id="val-rel-fans">30%</span></div>
+                                    <div class="progress-track" style="height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1);"><div id="rel-fill-fans" class="progress-fill" style="width: 30%; border-radius: 3px; background: linear-gradient(90deg, #2196f3, #00bcd4);"></div></div>
                                 </div>
                             </div>
                         </div>
@@ -417,8 +419,17 @@
                         <span id="training-progress-text">0/5</span>
                     </div>
                 </div>
-                <div id="training-rhythm-ui" class="rhythm-ui" style="display:none;">
-                    <div id="rhythm-target" class="rhythm-target"></div>
+                <div id="training-rhythm-ui" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,80,20,0.97); z-index:100;">
+                    <div id="cond-lives" style="font-size:28px; margin-bottom:10px;">❤️❤️❤️</div>
+                    <div style="color:rgba(255,255,255,0.6); font-size:12px; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px;">SKORU: <span id="cond-score-display">0</span>/20</div>
+                    <div id="cond-arrow" style="font-size:130px; line-height:1; margin:10px 0; transition: filter 0.2s;">⬆️</div>
+                    <div style="color:rgba(255,255,255,0.7); font-size:14px; margin-bottom:24px;">Doğru yönü seç!</div>
+                    <div style="display:flex; gap:16px;">
+                        <button id="cond-btn-left"  onclick="window._condTap('left')"  style="font-size:44px; padding:18px 22px; border-radius:18px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.2); color:white; cursor:pointer; transition:transform 0.1s;">⬅️</button>
+                        <button id="cond-btn-up"    onclick="window._condTap('up')"    style="font-size:44px; padding:18px 22px; border-radius:18px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.2); color:white; cursor:pointer; transition:transform 0.1s;">⬆️</button>
+                        <button id="cond-btn-down"  onclick="window._condTap('down')"  style="font-size:44px; padding:18px 22px; border-radius:18px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.2); color:white; cursor:pointer; transition:transform 0.1s;">⬇️</button>
+                        <button id="cond-btn-right" onclick="window._condTap('right')" style="font-size:44px; padding:18px 22px; border-radius:18px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.2); color:white; cursor:pointer; transition:transform 0.1s;">➡️</button>
+                    </div>
                 </div>
                 <canvas id="training-canvas-3d" width="400" height="480" style="background: #1a4a1a;"></canvas>
                 <canvas id="training-canvas-2d" width="400" height="480" style="background: #1a4a1a; display: none;"></canvas>
@@ -460,30 +471,38 @@
                         <h2 class="intro-title" id="intro-title">DERBİ GÜNÜ</h2>
                         <div class="intro-divider"></div>
                         <p class="intro-venue" id="intro-venue">DÜNYA ARENASI</p>
+                        <button id="btn-skip-intro" class="btn btn-primary" style="margin-top:20px; z-index:100; position:relative;">MAÇA BAŞLA</button>
                     </div>
                 </div>
                 <div class="crowd-flash"></div>
             </div>
 
-            <div id="screen-match" class="game-screen" style="padding:0;">
-                <div class="match-header">
+            <div id="screen-match" style="display:none;"></div>
+
+            <div id="screen-gameplay" class="game-screen" style="background: #0a0a0a; justify-content: flex-start; align-items: stretch; padding:0; position:relative;">
+                
+                <!-- Overlay Header -->
+                <div class="match-header" style="position:absolute; top:0; left:0; width:100%; z-index:10; background: rgba(0,0,0,0.7); box-shadow: none;">
                     <div class="scoreboard-compact">
                         <div class="team-box">
-                            <div class="name">EV SAHIBI</div>
+                            <div class="name" id="match-header-home-name">EV SAHIBI</div>
                             <div id="match-score-team" class="score">0</div>
                         </div>
                         <div class="timer-box" id="match-timer">00'</div>
                         <div class="team-box">
-                            <div class="name">RAKIP</div>
+                            <div class="name" id="match-header-away-name">RAKIP</div>
                             <div id="match-score-opp" class="score">0</div>
                         </div>
                     </div>
                 </div>
-                <div class="commentary-panel" id="match-commentary-list" style="flex:1; padding:20px; overflow-y:auto; background: var(--bg-dark);"></div>
-            </div>
 
-            <div id="screen-gameplay" class="game-screen" style="background: #0a0a0a; justify-content: flex-start; align-items: stretch; padding:0;">
-                <canvas id="pitch-canvas" style="width:100%; height:100%; display:block;"></canvas>
+                <!-- Overlay Skip Button -->
+                <button id="btn-skip-match" class="btn btn-primary" style="position:absolute; top:80px; right:10px; z-index:20; padding:5px 10px; font-size:0.8rem;">⚡ ATLAT</button>
+                
+                <canvas id="pitch-canvas" style="width:100%; height:100%; display:block; z-index:1;"></canvas>
+                
+                <!-- Overlay Commentary -->
+                <div class="commentary-panel" id="match-commentary-list" style="position:absolute; bottom:20px; left:5%; width:90%; height:120px; padding:10px; overflow-y:auto; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); border-radius:12px; z-index:10; font-size:0.8rem; border: 1px solid rgba(255,255,255,0.1);"></div>
             </div>
 
             <!-- MAÇ SONUCU EKRANI -->
@@ -582,6 +601,6 @@
 
         </div>
     </div>
-    <script type="module" src="main.js"></script>
+    <script type="module" src="ana.js"></script>
 </body>
 </html>

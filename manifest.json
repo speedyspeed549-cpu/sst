@@ -1,6 +1,6 @@
 {
-  "name": "Pro Kariyer Soccer Simulator",
-  "short_name": "ProKariyer",
+  "name": "MatchDay Star",
+  "short_name": "MatchDay Star",
   "description": "Futbol kariyerini zirveye taşı!",
   "start_url": "./index.html",
   "display": "standalone",
